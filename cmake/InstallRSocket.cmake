@@ -17,7 +17,7 @@ if (INSTALL_RSOCKET)
   # Build and install rsocket.
   ExternalProject_Add(
     rsocket-ext
-    GIT_REPOSITORY https://github.com/netifi/rsocket-cpp
+    GIT_REPOSITORY https://github.com/rsocket/rsocket-cpp
     GIT_TAG ${RSOCKET_VERSION}
     CMAKE_ARGS += -DCMAKE_INSTALL_PREFIX=${RSOCKET_INSTALL_DIR} -DBUILD_SHARED_LIBS=ON
     TEST_AFTER_INSTALL 1
