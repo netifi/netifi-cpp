@@ -62,6 +62,7 @@ static void deserializeHeaderFrom(folly::io::Cursor& cur, FrameHeader& header) {
       static_cast<FrameFlags>(((type & 0x3) << 8) | cur.readBE<uint8_t>());
 }
 
+/*
 static void serializeMetadataInto(
     folly::io::QueueAppender& appender,
     std::unique_ptr<folly::IOBuf> metadata) {
@@ -82,6 +83,7 @@ static void serializeMetadataInto(
 
   appender.insert(std::move(metadata));
 }
+*/
 
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::deserializeMetadataFrom(
     folly::io::Cursor& cur,
@@ -122,6 +124,7 @@ static rsocket::Payload deserializePayloadFrom(
   return rsocket::Payload(std::move(data), std::move(metadata));
 }
 
+/*
 static void serializePayloadInto(
     folly::io::QueueAppender& appender,
     rsocket::Payload&& payload) {
@@ -130,6 +133,7 @@ static void serializePayloadInto(
     appender.insert(std::move(payload.data));
   }
 }
+*/
 
 static uint32_t payloadFramingSize(const rsocket::Payload& payload) {
   return (payload.metadata != nullptr ? kMedatadaLengthSize : 0);
@@ -177,6 +181,7 @@ static size_t getResumeIdTokenFramingLength(
       : 0;
 }
 
+/*
 FrameType FrameSerializerV1_0::peekFrameType(const folly::IOBuf& in) const {
   folly::io::Cursor cur(&in);
   try {
@@ -206,45 +211,54 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_STREAM&& frame) const {
   return serializeOutInternal(std::move(frame));
 }
+*/
 
+/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_CHANNEL&& frame) const {
   return serializeOutInternal(std::move(frame));
 }
 
+*/
+
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_RESPONSE&& frame) const {
   auto queue =
       createBufferQueue(kFrameHeaderSize + payloadFramingSize(frame.payload_));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   serializePayloadInto(appender, std::move(frame.payload_));
   return queue.move();
 }
 
+
+/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_FNF&& frame) const {
   auto queue =
       createBufferQueue(kFrameHeaderSize + payloadFramingSize(frame.payload_));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   serializePayloadInto(appender, std::move(frame.payload_));
   return queue.move();
 }
+*/
 
+/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_N&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize + sizeof(uint32_t));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   appender.writeBE<int32_t>(static_cast<int32_t>(frame.requestN_));
   return queue.move();
 }
 
+
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_METADATA_PUSH&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize);
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   if (frame.metadata_) {
     appender.insert(std::move(frame.metadata_));
@@ -255,7 +269,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_CANCEL&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize);
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   return queue.move();
 }
@@ -264,7 +278,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_PAYLOAD&& frame) const {
   auto queue =
       createBufferQueue(kFrameHeaderSize + payloadFramingSize(frame.payload_));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   serializePayloadInto(appender, std::move(frame.payload_));
   return queue.move();
@@ -274,7 +288,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_ERROR&& frame) const {
   auto queue = createBufferQueue(
       kFrameHeaderSize + sizeof(uint32_t) + payloadFramingSize(frame.payload_));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   appender.writeBE(static_cast<uint32_t>(frame.errorCode_));
   serializePayloadInto(appender, std::move(frame.payload_));
@@ -284,7 +298,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_KEEPALIVE&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize + sizeof(int64_t));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   appender.writeBE<int64_t>(static_cast<int64_t>(frame.position_));
   if (frame.data_) {
@@ -301,7 +315,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
       getResumeIdTokenFramingLength(frame.header_.flags, frame.token_) +
       +sizeof(uint8_t) + frame.metadataMimeType_.length() + sizeof(uint8_t) +
       frame.dataMimeType_.length() + payloadFramingSize(frame.payload_));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
 
   serializeHeaderInto(appender, frame.header_);
   CHECK(
@@ -339,7 +353,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_LEASE&& frame) const {
   auto queue =
       createBufferQueue(kFrameHeaderSize + sizeof(int32_t) + sizeof(int32_t));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   appender.writeBE(static_cast<int32_t>(frame.ttl_));
   appender.writeBE(static_cast<int32_t>(frame.numberOfRequests_));
@@ -348,14 +362,18 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
   }
   return queue.move();
 }
+*/
 
+
+
+/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_RESUME&& frame) const {
   auto queue = createBufferQueue(
       kFrameHeaderSize + sizeof(uint16_t) + sizeof(uint16_t) +
       sizeof(uint16_t) + frame.token_.data().size() + sizeof(int32_t) +
       sizeof(int32_t));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
 
   CHECK(
@@ -375,11 +393,12 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_RESUME_OK&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize + sizeof(int64_t));
-  folly::io::QueueAppender appender(&queue, /* do not grow */ 0);
+  folly::io::QueueAppender appender(&queue, 0); // do not grow
   serializeHeaderInto(appender, frame.header_);
   appender.writeBE<int64_t>(frame.position_);
   return queue.move();
 }
+*/
 
 bool FrameSerializerV1_0::deserializeFrom(
     Frame_REQUEST_STREAM& frame,
