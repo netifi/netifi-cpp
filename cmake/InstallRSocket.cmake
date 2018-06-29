@@ -34,7 +34,8 @@ if (INSTALL_RSOCKET)
   file(MAKE_DIRECTORY ${RSOCKET_INCLUDE_DIR})
 else ()
   # Use installed rsocket.
-  find_package(RSocket REQUIRED)
+  find_package(ReactiveSocket REQUIRED)
+  find_package(yarpl REQUIRED)
 endif ()
 
 find_package(Folly)

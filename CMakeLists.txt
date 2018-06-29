@@ -233,9 +233,9 @@ add_executable(
 target_link_libraries(
   tests
   Proteus
-  ReactiveSocket
-  yarpl
-  folly
+  ${RSOCKET_LIBRARY}
+  ${YARPL_LIBRARY}
+  ${FOLLY_LIBRARY}
   ${GMOCK_LIBS}
   ${GFLAGS_LIBRARY}
   ${GLOG_LIBRARY})
