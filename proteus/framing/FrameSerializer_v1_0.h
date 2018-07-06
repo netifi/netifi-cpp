@@ -20,15 +20,19 @@ namespace proteus {
 
 class FrameSerializerV1_0 : public FrameSerializer {
  public:
+  /*
   constexpr static const ProtocolVersion Version = ProtocolVersion(1, 0);
   constexpr static const size_t kFrameHeaderSize = 6; // bytes
   constexpr static const size_t kMinBytesNeededForAutodetection = 10; // bytes
+
 
   ProtocolVersion protocolVersion() const override;
 
   static ProtocolVersion detectProtocolVersion(
       const folly::IOBuf& firstFrame,
       size_t skipBytes = 0);
+  
+  */
 
   FrameType peekFrameType(const folly::IOBuf& in) const override;
   folly::Optional<rsocket::StreamId> peekStreamId(const folly::IOBuf& in) const override;
@@ -53,6 +57,7 @@ class FrameSerializerV1_0 : public FrameSerializer {
   std::unique_ptr<folly::IOBuf> serializeOut(Frame_RESUME&&) const override;
   std::unique_ptr<folly::IOBuf> serializeOut(Frame_RESUME_OK&&) const override;
 
+  /*
   bool deserializeFrom(Frame_REQUEST_STREAM&, std::unique_ptr<folly::IOBuf>)
       const override;
   bool deserializeFrom(Frame_REQUEST_CHANNEL&, std::unique_ptr<folly::IOBuf>)
@@ -81,10 +86,13 @@ class FrameSerializerV1_0 : public FrameSerializer {
       const override;
   bool deserializeFrom(Frame_RESUME_OK&, std::unique_ptr<folly::IOBuf>)
       const override;
+  */
 
+  /*
   static std::unique_ptr<folly::IOBuf> deserializeMetadataFrom(
       folly::io::Cursor& cur,
       FrameFlags flags);
+  */
 
  private:
   std::unique_ptr<folly::IOBuf> serializeOutInternal(

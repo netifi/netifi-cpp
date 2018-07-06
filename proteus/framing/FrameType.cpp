@@ -24,6 +24,7 @@ constexpr folly::StringPiece kUnknown{"UNKNOWN_FRAME_TYPE"};
 
 folly::StringPiece toString(FrameType type) {
   switch (type) {
+    /*
     case FrameType::RESERVED:
       return "RESERVED";
     case FrameType::SETUP:
@@ -59,6 +60,26 @@ folly::StringPiece toString(FrameType type) {
     default:
       DLOG(FATAL) << "Unknown frame type";
       return kUnknown;
+    */
+
+    case FrameType::UNDEFINED:
+      return "UNDEFINED";
+    case FrameType::BROKER_SETUP:
+      return "BROKER_SETUP";
+    case FrameType::DESTINATION_SETUP:
+      return "DESTINATION_SETUP";
+    case FrameType::DESTINATION:
+      return "DESTINATION";
+    case FrameType::GROUP:
+      return "GROUP";
+    case FrameType::BROADCAST:
+      return "BROADCAST";
+    case FrameType::SHARD:
+      return "SHARD";
+    default:
+      DLOG(FATAL) << "Unknown frame type";
+      return kUnknown;
+
   }
 }
 

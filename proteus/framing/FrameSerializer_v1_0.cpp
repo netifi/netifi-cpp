@@ -31,6 +31,7 @@ ProtocolVersion FrameSerializerV1_0::protocolVersion() const {
   return Version;
 }
 
+/*
 static FrameType deserializeFrameType(uint16_t frameType) {
   if (frameType > static_cast<uint8_t>(FrameType::RESUME_OK) &&
       frameType != static_cast<uint8_t>(FrameType::EXT)) {
@@ -61,8 +62,8 @@ static void deserializeHeaderFrom(folly::io::Cursor& cur, FrameHeader& header) {
   header.flags =
       static_cast<FrameFlags>(((type & 0x3) << 8) | cur.readBE<uint8_t>());
 }
+*/
 
-/*
 static void serializeMetadataInto(
     folly::io::QueueAppender& appender,
     std::unique_ptr<folly::IOBuf> metadata) {
@@ -83,8 +84,8 @@ static void serializeMetadataInto(
 
   appender.insert(std::move(metadata));
 }
-*/
 
+/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::deserializeMetadataFrom(
     folly::io::Cursor& cur,
     FrameFlags flags) {
@@ -123,8 +124,9 @@ static rsocket::Payload deserializePayloadFrom(
   auto data = deserializeDataFrom(cur);
   return rsocket::Payload(std::move(data), std::move(metadata));
 }
+*/
 
-/*
+
 static void serializePayloadInto(
     folly::io::QueueAppender& appender,
     rsocket::Payload&& payload) {
@@ -133,7 +135,7 @@ static void serializePayloadInto(
     appender.insert(std::move(payload.data));
   }
 }
-*/
+
 
 static uint32_t payloadFramingSize(const rsocket::Payload& payload) {
   return (payload.metadata != nullptr ? kMedatadaLengthSize : 0);
@@ -153,6 +155,7 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOutInternal(
   return queue.move();
 }
 
+/*
 static bool deserializeFromInternal(
     Frame_REQUEST_Base& frame,
     std::unique_ptr<folly::IOBuf> in) {
@@ -172,6 +175,7 @@ static bool deserializeFromInternal(
   }
   return true;
 }
+*/
 
 static size_t getResumeIdTokenFramingLength(
     FrameFlags flags,
@@ -181,7 +185,7 @@ static size_t getResumeIdTokenFramingLength(
       : 0;
 }
 
-/*
+
 FrameType FrameSerializerV1_0::peekFrameType(const folly::IOBuf& in) const {
   folly::io::Cursor cur(&in);
   try {
@@ -211,15 +215,17 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_STREAM&& frame) const {
   return serializeOutInternal(std::move(frame));
 }
-*/
 
-/*
+/***************************
+
+ALL IN COMMENT BLOCK ARE SAME VARIATIONS ON SERIALIZEOUT
+
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_CHANNEL&& frame) const {
   return serializeOutInternal(std::move(frame));
 }
 
-*/
+
 
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_RESPONSE&& frame) const {
@@ -232,7 +238,6 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
 }
 
 
-/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_FNF&& frame) const {
   auto queue =
@@ -242,9 +247,8 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
   serializePayloadInto(appender, std::move(frame.payload_));
   return queue.move();
 }
-*/
 
-/*
+
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_REQUEST_N&& frame) const {
   auto queue = createBufferQueue(kFrameHeaderSize + sizeof(uint32_t));
@@ -362,11 +366,8 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
   }
   return queue.move();
 }
-*/
 
 
-
-/*
 std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
     Frame_RESUME&& frame) const {
   auto queue = createBufferQueue(
@@ -398,8 +399,12 @@ std::unique_ptr<folly::IOBuf> FrameSerializerV1_0::serializeOut(
   appender.writeBE<int64_t>(frame.position_);
   return queue.move();
 }
-*/
 
+END OF SERIALIZE OUTS
+********************************/
+
+
+/*
 bool FrameSerializerV1_0::deserializeFrom(
     Frame_REQUEST_STREAM& frame,
     std::unique_ptr<folly::IOBuf> in) const {
@@ -644,6 +649,7 @@ bool FrameSerializerV1_0::deserializeFrom(
   }
   return true;
 }
+*/
 
 ProtocolVersion FrameSerializerV1_0::detectProtocolVersion(
     const folly::IOBuf& firstFrame,
@@ -672,6 +678,9 @@ ProtocolVersion FrameSerializerV1_0::detectProtocolVersion(
   //                                 ...
   //  +-------------------------------+-------------------------------+
 
+
+/*
+  // i think this is only used for deserializing?
   folly::io::Cursor cur(&firstFrame);
   try {
     cur.skip(skipBytes);
@@ -698,8 +707,11 @@ ProtocolVersion FrameSerializerV1_0::detectProtocolVersion(
   }
   return ProtocolVersion::Unknown;
 }
+*/
 
+/*
 size_t FrameSerializerV1_0::frameLengthFieldSize() const {
   return 3; // bytes
 }
+*/
 } // namespace proteus
