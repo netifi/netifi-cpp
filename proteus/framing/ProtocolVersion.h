@@ -26,6 +26,7 @@ namespace proteus {
 #undef minor
 
 struct ProtocolVersion {
+  /*
   uint16_t major{};
   uint16_t minor{};
 
@@ -35,7 +36,17 @@ struct ProtocolVersion {
 
   static const ProtocolVersion Unknown;
   static const ProtocolVersion Latest;
+  */
+public:
+  const int MAJOR_VERSION;
+  const int MINOR_VERSION;
+  const int BYTES;
+
+  // returns a BYTEBUF-- encodeFrameHeader
+
 };
+
+
 
 #pragma pop_macro("major")
 #pragma pop_macro("minor")
