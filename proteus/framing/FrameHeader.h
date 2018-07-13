@@ -16,7 +16,6 @@
 
 #include <iosfwd>
 
-#include "proteus/framing/FrameFlags.h"
 #include "proteus/framing/FrameType.h"
 #include "rsocket/internal/Common.h"
 
@@ -26,24 +25,12 @@ class FrameHeader {
  public:
   FrameHeader() {}
 
-  FrameHeader(FrameType ty, FrameFlags fflags, rsocket::StreamId stream)
-      : type{ty}, flags{fflags}, streamId{stream} {}
+  FrameHeader(uint16_t _major, uint16_t _minor, FrameType ty)
+      : major(_major), minor(_minor), type{ty} {}
 
-  bool flagsComplete() const {
-    return !!(flags & FrameFlags::COMPLETE);
-  }
-
-  bool flagsNext() const {
-    return !!(flags & FrameFlags::NEXT);
-  }
-
-  bool flagsFollows() const {
-    return !!(flags & FrameFlags::FOLLOWS);
-  }
-
-  FrameType type{FrameType::RESERVED};
-  FrameFlags flags{FrameFlags::EMPTY};
-    rsocket::StreamId streamId{0};
+  uint16_t major{};
+  uint16_t minor{};
+  FrameType type{FrameType::UNDEFINED};
 };
 
 std::ostream& operator<<(std::ostream&, const FrameHeader&);

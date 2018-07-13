@@ -22,11 +22,8 @@
 #include <folly/io/IOBufQueue.h>
 
 #include "rsocket/Payload.h"
-#include "proteus/framing/ErrorCode.h"
-#include "proteus/framing/FrameFlags.h"
 #include "proteus/framing/FrameHeader.h"
 #include "proteus/framing/FrameType.h"
-#include "proteus/framing/ProtocolVersion.h"
 #include "rsocket/internal/Common.h"
 
 namespace folly {
@@ -55,7 +52,7 @@ void checkFlags(const rsocket::Payload&, FrameFlags);
 /// stream, intermediate layers that are frame-type-agnostic pass around
 /// serialized frame.
 
-class Frame_REQUEST_N {
+class Frame_BROKER_SETUP {
  public:
   /*
    * Maximum value for ReactiveSocket Subscription::request.
@@ -65,9 +62,9 @@ class Frame_REQUEST_N {
    */
   static constexpr int64_t kMaxRequestN = rsocket::kMaxRequestN;
 
-  Frame_REQUEST_N() = default;
-  Frame_REQUEST_N(rsocket::StreamId streamId, uint32_t requestN)
-      : header_(FrameType::REQUEST_N, FrameFlags::EMPTY, streamId),
+  Frame_BROKER_SETUP() = default;
+  Frame_BROKER_SETUP(rsocket::StreamId streamId, uint32_t requestN)
+      : header_(FrameType::BROKER_SETUP, FrameFlags::EMPTY, streamId),
         requestN_(requestN) {
     DCHECK(requestN_ > 0);
     DCHECK(requestN_ <= kMaxRequestN);
@@ -76,104 +73,17 @@ class Frame_REQUEST_N {
   FrameHeader header_;
   uint32_t requestN_{};
 };
-std::ostream& operator<<(std::ostream&, const Frame_REQUEST_N&);
+std::ostream& operator<<(std::ostream&, const Frame_BROKER_SETUP&);
 
-class Frame_REQUEST_Base {
- public:
-  Frame_REQUEST_Base() = default;
-  Frame_REQUEST_Base(
-      FrameType frameType,
-      rsocket::StreamId streamId,
-      FrameFlags flags,
-      uint32_t requestN,
-      rsocket::Payload payload)
-      : header_(frameType, flags | detail::getFlags(payload), streamId),
-        requestN_(requestN),
-        payload_(std::move(payload)) {
-    detail::checkFlags(payload_, header_.flags);
-    // TODO: DCHECK(requestN_ > 0);
-    DCHECK(requestN_ <= Frame_REQUEST_N::kMaxRequestN);
-  }
-
-  /// For compatibility with other data-carrying frames.
-  Frame_REQUEST_Base(
-      FrameType frameType,
-      rsocket::StreamId streamId,
-      FrameFlags flags,
-      rsocket::Payload payload)
-      : Frame_REQUEST_Base(frameType, streamId, flags, 0, std::move(payload)) {}
-
-  FrameHeader header_;
-  uint32_t requestN_{};
-  rsocket::Payload payload_;
-};
-std::ostream& operator<<(std::ostream&, const Frame_REQUEST_Base&);
-
-class Frame_REQUEST_STREAM : public Frame_REQUEST_Base {
+class Frame_DESTINATION_SETUP {
  public:
   constexpr static const FrameFlags AllowedFlags =
       FrameFlags::METADATA | FrameFlags::FOLLOWS;
 
-  Frame_REQUEST_STREAM() = default;
-  Frame_REQUEST_STREAM(
-      rsocket::StreamId streamId,
-      FrameFlags flags,
-      uint32_t requestN,
-      rsocket::Payload payload)
-      : Frame_REQUEST_Base(
-            FrameType::REQUEST_STREAM,
-            streamId,
-            flags,
-            requestN,
-            std::move(payload)) {}
-
-  /// For compatibility with other data-carrying frames.
-  Frame_REQUEST_STREAM(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
-      : Frame_REQUEST_STREAM(
-            streamId,
-            flags & AllowedFlags,
-            0,
-            std::move(payload)) {}
-};
-std::ostream& operator<<(std::ostream& os, const Frame_REQUEST_STREAM& frame);
-
-class Frame_REQUEST_CHANNEL : public Frame_REQUEST_Base {
- public:
-  constexpr static const FrameFlags AllowedFlags =
-      FrameFlags::METADATA | FrameFlags::FOLLOWS | FrameFlags::COMPLETE;
-
-  Frame_REQUEST_CHANNEL() = default;
-  Frame_REQUEST_CHANNEL(
-      rsocket::StreamId streamId,
-      FrameFlags flags,
-      uint32_t requestN,
-      rsocket::Payload payload)
-      : Frame_REQUEST_Base(
-            FrameType::REQUEST_CHANNEL,
-            streamId,
-            flags,
-            requestN,
-            std::move(payload)) {}
-
-  /// For compatibility with other data-carrying frames.
-  Frame_REQUEST_CHANNEL(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
-      : Frame_REQUEST_CHANNEL(
-            streamId,
-            flags & AllowedFlags,
-            0,
-            std::move(payload)) {}
-};
-std::ostream& operator<<(std::ostream&, const Frame_REQUEST_CHANNEL&);
-
-class Frame_REQUEST_RESPONSE {
- public:
-  constexpr static const FrameFlags AllowedFlags =
-      FrameFlags::METADATA | FrameFlags::FOLLOWS;
-
-  Frame_REQUEST_RESPONSE() = default;
-  Frame_REQUEST_RESPONSE(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
+  Frame_DESTINATION_SETUP() = default;
+  Frame_DESTINATION_SETUP(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
       : header_(
-            FrameType::REQUEST_RESPONSE,
+            FrameType::DESTINATION_SETUP,
             (flags & AllowedFlags) | detail::getFlags(payload),
             streamId),
         payload_(std::move(payload)) {
@@ -183,17 +93,17 @@ class Frame_REQUEST_RESPONSE {
   FrameHeader header_;
   rsocket::Payload payload_;
 };
-std::ostream& operator<<(std::ostream&, const Frame_REQUEST_RESPONSE&);
+std::ostream& operator<<(std::ostream&, const Frame_DESTINATION_SETUP&);
 
-class Frame_REQUEST_FNF {
+class Frame_DESTINATION {
  public:
   constexpr static const FrameFlags AllowedFlags =
       FrameFlags::METADATA | FrameFlags::FOLLOWS;
 
-  Frame_REQUEST_FNF() = default;
-  Frame_REQUEST_FNF(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
+  Frame_DESTINATION() = default;
+  Frame_DESTINATION(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
       : header_(
-            FrameType::REQUEST_FNF,
+            FrameType::DESTINATION,
             (flags & AllowedFlags) | detail::getFlags(payload),
             streamId),
         payload_(std::move(payload)) {
@@ -203,13 +113,13 @@ class Frame_REQUEST_FNF {
   FrameHeader header_;
   rsocket::Payload payload_;
 };
-std::ostream& operator<<(std::ostream&, const Frame_REQUEST_FNF&);
+std::ostream& operator<<(std::ostream&, const Frame_DESTINATION&);
 
-class Frame_METADATA_PUSH {
+class Frame_GROUP {
  public:
-  Frame_METADATA_PUSH() {}
-  explicit Frame_METADATA_PUSH(std::unique_ptr<folly::IOBuf> metadata)
-      : header_(FrameType::METADATA_PUSH, FrameFlags::METADATA, 0),
+  Frame_GROUP() {}
+  explicit Frame_GROUP(std::unique_ptr<folly::IOBuf> metadata)
+      : header_(FrameType::GROUP, FrameFlags::METADATA, 0),
         metadata_(std::move(metadata)) {
     CHECK(metadata_);
   }
@@ -217,218 +127,27 @@ class Frame_METADATA_PUSH {
   FrameHeader header_;
   std::unique_ptr<folly::IOBuf> metadata_;
 };
-std::ostream& operator<<(std::ostream&, const Frame_METADATA_PUSH&);
+std::ostream& operator<<(std::ostream&, const Frame_GROUP&);
 
-class Frame_CANCEL {
+class Frame_BROADCAST {
  public:
-  Frame_CANCEL() = default;
-  explicit Frame_CANCEL(rsocket::StreamId streamId)
-      : header_(FrameType::CANCEL, FrameFlags::EMPTY, streamId) {}
+  Frame_BROADCAST() = default;
+  explicit Frame_BROADCAST(rsocket::StreamId streamId)
+      : header_(FrameType::BROADCAST, FrameFlags::EMPTY, streamId) {}
 
   FrameHeader header_;
 };
-std::ostream& operator<<(std::ostream&, const Frame_CANCEL&);
+std::ostream& operator<<(std::ostream&, const Frame_BROADCAST&);
 
-class Frame_PAYLOAD {
- public:
-  constexpr static const FrameFlags AllowedFlags = FrameFlags::METADATA |
-      FrameFlags::FOLLOWS | FrameFlags::COMPLETE | FrameFlags::NEXT;
+class Frame_SHARD {
+public:
+    Frame_SHARD() = default;
+    explicit Frame_SHARD(rsocket::StreamId streamId)
+            : header_(FrameType::SHARD, FrameFlags::EMPTY, streamId) {}
 
-  Frame_PAYLOAD() = default;
-  Frame_PAYLOAD(rsocket::StreamId streamId, FrameFlags flags, rsocket::Payload payload)
-      : header_(
-            FrameType::PAYLOAD,
-            (flags & AllowedFlags) | detail::getFlags(payload),
-            streamId),
-        payload_(std::move(payload)) {
-    detail::checkFlags(payload_, header_.flags);
-  }
-
-  static Frame_PAYLOAD complete(rsocket::StreamId streamId);
-
-  FrameHeader header_;
-  rsocket::Payload payload_;
+    FrameHeader header_;
 };
-std::ostream& operator<<(std::ostream&, const Frame_PAYLOAD&);
-
-class Frame_ERROR {
- public:
-  constexpr static const FrameFlags AllowedFlags = FrameFlags::METADATA;
-
-  Frame_ERROR() = default;
-  Frame_ERROR(rsocket::StreamId streamId, ErrorCode errorCode, rsocket::Payload payload)
-      : header_(FrameType::ERROR, detail::getFlags(payload), streamId),
-        errorCode_(errorCode),
-        payload_(std::move(payload)) {}
-
-  // Connection errors.
-  static Frame_ERROR invalidSetup(folly::StringPiece);
-  static Frame_ERROR unsupportedSetup(folly::StringPiece);
-  static Frame_ERROR rejectedSetup(folly::StringPiece);
-  static Frame_ERROR rejectedResume(folly::StringPiece);
-  static Frame_ERROR connectionError(folly::StringPiece);
-
-  // Stream errors.
-  static Frame_ERROR applicationError(rsocket::StreamId, folly::StringPiece);
-  static Frame_ERROR applicationError(rsocket::StreamId, rsocket::Payload&&);
-  static Frame_ERROR rejected(rsocket::StreamId, folly::StringPiece);
-  static Frame_ERROR canceled(rsocket::StreamId, folly::StringPiece);
-  static Frame_ERROR invalid(rsocket::StreamId, folly::StringPiece);
-
- private:
-  static Frame_ERROR connectionErr(ErrorCode, folly::StringPiece);
-  static Frame_ERROR streamErr(ErrorCode, folly::StringPiece, rsocket::StreamId);
-
- public:
-  FrameHeader header_;
-  ErrorCode errorCode_{};
-  rsocket::Payload payload_;
-};
-std::ostream& operator<<(std::ostream&, const Frame_ERROR&);
-
-class Frame_KEEPALIVE {
- public:
-  constexpr static const FrameFlags AllowedFlags =
-      FrameFlags::KEEPALIVE_RESPOND;
-
-  Frame_KEEPALIVE() = default;
-  Frame_KEEPALIVE(
-      FrameFlags flags,
-      rsocket::ResumePosition position,
-      std::unique_ptr<folly::IOBuf> data)
-      : header_(FrameType::KEEPALIVE, flags & AllowedFlags, 0),
-        position_(position),
-        data_(std::move(data)) {}
-
-  FrameHeader header_;
-  rsocket::ResumePosition position_{};
-  std::unique_ptr<folly::IOBuf> data_;
-};
-std::ostream& operator<<(std::ostream&, const Frame_KEEPALIVE&);
-
-class Frame_SETUP {
- public:
-  constexpr static const FrameFlags AllowedFlags =
-      FrameFlags::METADATA | FrameFlags::RESUME_ENABLE | FrameFlags::LEASE;
-
-  constexpr static const uint32_t kMaxKeepaliveTime =
-      std::numeric_limits<int32_t>::max();
-  constexpr static const uint32_t kMaxLifetime =
-      std::numeric_limits<int32_t>::max();
-
-  Frame_SETUP() = default;
-  Frame_SETUP(
-      FrameFlags flags,
-      uint16_t versionMajor,
-      uint16_t versionMinor,
-      uint32_t keepaliveTime,
-      uint32_t maxLifetime,
-      const rsocket::ResumeIdentificationToken& token,
-      std::string metadataMimeType,
-      std::string dataMimeType,
-      rsocket::Payload payload)
-      : header_(
-            FrameType::SETUP,
-            (flags & AllowedFlags) | detail::getFlags(payload),
-            0),
-        versionMajor_(versionMajor),
-        versionMinor_(versionMinor),
-        keepaliveTime_(keepaliveTime),
-        maxLifetime_(maxLifetime),
-        token_(token),
-        metadataMimeType_(metadataMimeType),
-        dataMimeType_(dataMimeType),
-        payload_(std::move(payload)) {
-    detail::checkFlags(payload_, header_.flags);
-    DCHECK(keepaliveTime_ > 0);
-    DCHECK(maxLifetime_ > 0);
-    DCHECK(keepaliveTime_ <= kMaxKeepaliveTime);
-    DCHECK(maxLifetime_ <= kMaxLifetime);
-  }
-
-  FrameHeader header_;
-  uint16_t versionMajor_{};
-  uint16_t versionMinor_{};
-  uint32_t keepaliveTime_{};
-  uint32_t maxLifetime_{};
-  rsocket::ResumeIdentificationToken token_;
-  std::string metadataMimeType_;
-  std::string dataMimeType_;
-  rsocket::Payload payload_;
-};
-std::ostream& operator<<(std::ostream&, const Frame_SETUP&);
-/// @}
-
-class Frame_LEASE {
- public:
-  constexpr static const FrameFlags AllowedFlags = FrameFlags::METADATA;
-  constexpr static const uint32_t kMaxTtl = std::numeric_limits<int32_t>::max();
-  constexpr static const uint32_t kMaxNumRequests =
-      std::numeric_limits<int32_t>::max();
-
-  Frame_LEASE() = default;
-  Frame_LEASE(
-      uint32_t ttl,
-      uint32_t numberOfRequests,
-      std::unique_ptr<folly::IOBuf> metadata = std::unique_ptr<folly::IOBuf>())
-      : header_(
-            FrameType::LEASE,
-            metadata ? FrameFlags::METADATA : FrameFlags::EMPTY,
-            0),
-        ttl_(ttl),
-        numberOfRequests_(numberOfRequests),
-        metadata_(std::move(metadata)) {
-    DCHECK(ttl_ > 0);
-    DCHECK(numberOfRequests_ > 0);
-    DCHECK(ttl_ <= kMaxTtl);
-    DCHECK(numberOfRequests_ <= kMaxNumRequests);
-  }
-
-  FrameHeader header_;
-  uint32_t ttl_{};
-  uint32_t numberOfRequests_{};
-  std::unique_ptr<folly::IOBuf> metadata_;
-};
-std::ostream& operator<<(std::ostream&, const Frame_LEASE&);
-/// @}
-
-class Frame_RESUME {
- public:
-  Frame_RESUME() = default;
-  Frame_RESUME(
-      const rsocket::ResumeIdentificationToken& token,
-      rsocket::ResumePosition lastReceivedServerPosition,
-      rsocket::ResumePosition clientPosition,
-      ProtocolVersion protocolVersion)
-      : header_(FrameType::RESUME, FrameFlags::EMPTY, 0),
-        versionMajor_(protocolVersion.major),
-        versionMinor_(protocolVersion.minor),
-        token_(token),
-        lastReceivedServerPosition_(lastReceivedServerPosition),
-        clientPosition_(clientPosition) {}
-
-  FrameHeader header_;
-  uint16_t versionMajor_{};
-  uint16_t versionMinor_{};
-  rsocket::ResumeIdentificationToken token_;
-  rsocket::ResumePosition lastReceivedServerPosition_{};
-  rsocket::ResumePosition clientPosition_{};
-};
-std::ostream& operator<<(std::ostream&, const Frame_RESUME&);
-/// @}
-
-class Frame_RESUME_OK {
- public:
-  Frame_RESUME_OK() = default;
-  explicit Frame_RESUME_OK(rsocket::ResumePosition position)
-      : header_(FrameType::RESUME_OK, FrameFlags::EMPTY, 0),
-        position_(position) {}
-
-  FrameHeader header_;
-  rsocket::ResumePosition position_{};
-};
-std::ostream& operator<<(std::ostream&, const Frame_RESUME_OK&);
-/// @}
+std::ostream& operator<<(std::ostream&, const Frame_SHARD&);
 
 rsocket::StreamType getStreamType(FrameType frameType);
 } // namespace proteus

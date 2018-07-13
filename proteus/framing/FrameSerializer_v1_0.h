@@ -33,53 +33,24 @@ class FrameSerializerV1_0 : public FrameSerializer {
   FrameType peekFrameType(const folly::IOBuf& in) const override;
   folly::Optional<rsocket::StreamId> peekStreamId(const folly::IOBuf& in) const override;
 
-  std::unique_ptr<folly::IOBuf> serializeOut(
-      Frame_REQUEST_STREAM&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(
-      Frame_REQUEST_CHANNEL&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(
-      Frame_REQUEST_RESPONSE&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(
-      Frame_REQUEST_FNF&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_REQUEST_N&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(
-      Frame_METADATA_PUSH&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_CANCEL&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_PAYLOAD&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_ERROR&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_KEEPALIVE&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_SETUP&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_LEASE&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_RESUME&&) const override;
-  std::unique_ptr<folly::IOBuf> serializeOut(Frame_RESUME_OK&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_BROKER_SETUP&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_DESTINATION_SETUP&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_DESTINATION&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_GROUP&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_BROADCAST&&) const override;
+  std::unique_ptr<folly::IOBuf> serializeOut(Frame_SHARD&&) const override;
 
-  bool deserializeFrom(Frame_REQUEST_STREAM&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_BROKER_SETUP&, std::unique_ptr<folly::IOBuf>)
       const override;
-  bool deserializeFrom(Frame_REQUEST_CHANNEL&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_DESTINATION_SETUP&, std::unique_ptr<folly::IOBuf>)
       const override;
-  bool deserializeFrom(Frame_REQUEST_RESPONSE&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_DESTINATION&, std::unique_ptr<folly::IOBuf>)
       const override;
-  bool deserializeFrom(Frame_REQUEST_FNF&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_GROUP&, std::unique_ptr<folly::IOBuf>)
       const override;
-  bool deserializeFrom(Frame_REQUEST_N&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_BROADCAST&, std::unique_ptr<folly::IOBuf>)
       const override;
-  bool deserializeFrom(Frame_METADATA_PUSH&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_CANCEL&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_PAYLOAD&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_ERROR&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_KEEPALIVE&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_SETUP&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_LEASE&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_RESUME&, std::unique_ptr<folly::IOBuf>)
-      const override;
-  bool deserializeFrom(Frame_RESUME_OK&, std::unique_ptr<folly::IOBuf>)
+  bool deserializeFrom(Frame_SHARD&, std::unique_ptr<folly::IOBuf>)
       const override;
 
   static std::unique_ptr<folly::IOBuf> deserializeMetadataFrom(
@@ -87,9 +58,6 @@ class FrameSerializerV1_0 : public FrameSerializer {
       FrameFlags flags);
 
  private:
-  std::unique_ptr<folly::IOBuf> serializeOutInternal(
-      Frame_REQUEST_Base&& frame) const;
-
   size_t frameLengthFieldSize() const override;
 };
 } // namespace proteus

@@ -198,9 +198,7 @@ include_directories(${GMOCK_SOURCE_DIR}/googletest/include)
 
 add_library(
   Proteus
-  proteus/framing/ErrorCode.cpp
-  proteus/framing/ErrorCode.h
-  proteus/framing/Frame.cpp
+        proteus/framing/Frame.cpp
   proteus/framing/Frame.h
   proteus/framing/FrameFlags.cpp
   proteus/framing/FrameFlags.h
@@ -212,8 +210,7 @@ add_library(
   proteus/framing/FrameSerializer_v1_0.h
   proteus/framing/FrameType.cpp
   proteus/framing/FrameType.h
-  proteus/framing/ProtocolVersion.cpp
-  proteus/framing/ProtocolVersion.h)
+)
 
 target_link_libraries(Proteus ReactiveSocket yarpl folly ${GFLAGS_LIBRARY} ${GLOG_LIBRARY})
 

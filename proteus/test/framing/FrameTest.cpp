@@ -55,7 +55,7 @@ TEST(FrameTest, Frame_REQUEST_STREAM) {
   auto frame = reserialize<Frame_REQUEST_STREAM>(
       streamId, flags, requestN, rsocket::Payload(data->clone(), metadata->clone()));
 
-  expectHeader(FrameType::REQUEST_STREAM, flags, streamId, frame);
+  expectHeader(FrameType::SHARD, flags, streamId, frame);
   EXPECT_EQ(requestN, frame.requestN_);
   EXPECT_TRUE(folly::IOBufEqualTo()(*metadata, *frame.payload_.metadata));
   EXPECT_TRUE(folly::IOBufEqualTo()(*data, *frame.payload_.data));
@@ -79,7 +79,7 @@ TEST(FrameTest, Frame_REQUEST_CHANNEL) {
 TEST(FrameTest, Frame_REQUEST_N) {
   uint32_t streamId = 42;
   uint32_t requestN = 24;
-  auto frame = reserialize<Frame_REQUEST_N>(streamId, requestN);
+  auto frame = reserialize<Frame_BROKER_SETUP>(streamId, requestN);
 
   expectHeader(FrameType::REQUEST_N, FrameFlags::EMPTY, streamId, frame);
   EXPECT_EQ(requestN, frame.requestN_);
@@ -87,7 +87,7 @@ TEST(FrameTest, Frame_REQUEST_N) {
 
 TEST(FrameTest, Frame_CANCEL) {
   uint32_t streamId = 42;
-  auto frame = reserialize<Frame_CANCEL>(streamId);
+  auto frame = reserialize<Frame_SHARD>(streamId);
   expectHeader(FrameType::CANCEL, FrameFlags::EMPTY, streamId, frame);
 }
 
@@ -139,7 +139,7 @@ TEST(FrameTest, Frame_KEEPALIVE) {
   auto frame = reserialize<Frame_KEEPALIVE>(flags, position, data->clone());
 
   expectHeader(
-      FrameType::KEEPALIVE, FrameFlags::KEEPALIVE_RESPOND, streamId, frame);
+      FrameType::DESTINATION, FrameFlags::KEEPALIVE_RESPOND, streamId, frame);
   // Default position
   auto currProtVersion = ProtocolVersion::Latest;
   if (currProtVersion == ProtocolVersion(0, 1)) {
@@ -169,7 +169,7 @@ TEST(FrameTest, Frame_SETUP) {
       "d",
       rsocket::Payload(data->clone()));
 
-  expectHeader(FrameType::SETUP, flags, 0, frame);
+  expectHeader(FrameType::BROKER_SETUP, flags, 0, frame);
   EXPECT_EQ(versionMajor, frame.versionMajor_);
   EXPECT_EQ(versionMinor, frame.versionMinor_);
   EXPECT_EQ(keepaliveTime, frame.keepaliveTime_);
@@ -200,7 +200,7 @@ TEST(FrameTest, Frame_SETUP_resume) {
       "d",
       rsocket::Payload(data->clone()));
 
-  expectHeader(FrameType::SETUP, flags, 0, frame);
+  expectHeader(FrameType::BROKER_SETUP, flags, 0, frame);
   EXPECT_EQ(versionMajor, frame.versionMajor_);
   EXPECT_EQ(versionMinor, frame.versionMinor_);
   EXPECT_EQ(keepaliveTime, frame.keepaliveTime_);
@@ -217,7 +217,7 @@ TEST(FrameTest, Frame_LEASE) {
   auto numberOfRequests = Frame_LEASE::kMaxNumRequests;
   auto frame = reserialize<Frame_LEASE>(ttl, numberOfRequests);
 
-  expectHeader(FrameType::LEASE, flags, 0, frame);
+  expectHeader(FrameType::DESTINATION_SETUP, flags, 0, frame);
   EXPECT_EQ(ttl, frame.ttl_);
   EXPECT_EQ(numberOfRequests, frame.numberOfRequests_);
 }
@@ -227,10 +227,10 @@ TEST(FrameTest, Frame_REQUEST_RESPONSE) {
   FrameFlags flags = FrameFlags::METADATA;
   auto metadata = folly::IOBuf::copyBuffer("i'm so meta even this acronym");
   auto data = folly::IOBuf::copyBuffer("424242");
-  auto frame = reserialize<Frame_REQUEST_RESPONSE>(
+  auto frame = reserialize<Frame_DESTINATION_SETUP>(
       streamId, flags, rsocket::Payload(data->clone(), metadata->clone()));
 
-  expectHeader(FrameType::REQUEST_RESPONSE, flags, streamId, frame);
+  expectHeader(FrameType::GROUP, flags, streamId, frame);
   EXPECT_TRUE(folly::IOBufEqualTo()(*metadata, *frame.payload_.metadata));
   EXPECT_TRUE(folly::IOBufEqualTo()(*data, *frame.payload_.data));
 }
@@ -240,10 +240,10 @@ TEST(FrameTest, Frame_REQUEST_FNF) {
   FrameFlags flags = FrameFlags::METADATA;
   auto metadata = folly::IOBuf::copyBuffer("i'm so meta even this acronym");
   auto data = folly::IOBuf::copyBuffer("424242");
-  auto frame = reserialize<Frame_REQUEST_FNF>(
+  auto frame = reserialize<Frame_DESTINATION>(
       streamId, flags, rsocket::Payload(data->clone(), metadata->clone()));
 
-  expectHeader(FrameType::REQUEST_FNF, flags, streamId, frame);
+  expectHeader(FrameType::BROADCAST, flags, streamId, frame);
   EXPECT_TRUE(folly::IOBufEqualTo()(*metadata, *frame.payload_.metadata));
   EXPECT_TRUE(folly::IOBufEqualTo()(*data, *frame.payload_.data));
 }
@@ -251,7 +251,7 @@ TEST(FrameTest, Frame_REQUEST_FNF) {
 TEST(FrameTest, Frame_METADATA_PUSH) {
   FrameFlags flags = FrameFlags::METADATA;
   auto metadata = folly::IOBuf::copyBuffer("i'm so meta even this acronym");
-  auto frame = reserialize<Frame_METADATA_PUSH>(metadata->clone());
+  auto frame = reserialize<Frame_GROUP>(metadata->clone());
 
   expectHeader(FrameType::METADATA_PUSH, flags, 0, frame);
   EXPECT_TRUE(folly::IOBufEqualTo()(*metadata, *frame.metadata_));
